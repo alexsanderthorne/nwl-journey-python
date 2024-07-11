@@ -81,3 +81,54 @@ def find_trip_link(tripId):
     response = controller.find(tripId)
 
     return jsonify(response["body"]), response["status_code"]
+
+@trips_routes_bp.route("/trips/<tripId>/invites", methods=["POST"])
+def invite_to_trip(tripId):
+    conn = db_connection_handler.get_connection()
+    participants_repository = ParticipantsRepository(conn)
+    emails_repository = EmailsToInviteRepository(conn)
+    controller = ParticipantCreator(participants_repository, emails_repository)
+
+    response = controller.create(request.json, tripId)
+
+    return jsonify(response["body"]), response["status_code"]
+
+@trips_routes_bp.route("/trips/<tripId>/activities", methods=["POST"])
+def create_activity(tripId):
+    conn = db_connection_handler.get_connection()
+    activities_repository = ActivitiesRepository(conn)
+    controller = ActivityCreator(activities_repository)
+
+    response = controller.create(request.json, tripId)
+
+    return jsonify(response["body"]), response["status_code"]
+
+@trips_routes_bp.route("/trips/<tripId>/participants", methods=["GET"])
+def get_trip_participants(tripId):
+    conn = db_connection_handler.get_connection()
+    participants_repository = ParticipantsRepository(conn)
+    controller = ParticipantFinder(participants_repository)
+
+    response = controller.find_participants_from_trip(tripId)
+
+    return jsonify(response["body"]), response["status_code"]
+
+@trips_routes_bp.route("/trips/<tripId>/activities", methods=["GET"])
+def get_trip_activities(tripId):
+    conn = db_connection_handler.get_connection()
+    activities_repository = ActivitiesRepository(conn)
+    controller = ActivityFinder(activities_repository)
+
+    response = controller.find_from_trip(tripId)
+
+    return jsonify(response["body"]), response["status_code"]
+
+@trips_routes_bp.route("/participants/<participantId>/confirm", methods=["PATCH"])
+def confirm_participant(participantId):
+    conn = db_connection_handler.get_connection()
+    participants_repository = ParticipantsRepository(conn)
+    controller = ParticipantConfirmer(participants_repository)
+
+    response = controller.confirm(participantId)
+
+    return jsonify(response["body"]), response["status_code"]
